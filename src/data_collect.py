@@ -17,7 +17,7 @@ params = {
 	"latitude": 40.41,
 	"longitude": -3.7,
 	"start_date": "2026-03-10",
-	"end_date": "2026-03-20",
+	"end_date": "2026-04-10",
 	"hourly": ["temperature_2m", "relative_humidity_2m", "dew_point_2m", "apparent_temperature", "precipitation", "surface_pressure", "cloud_cover", "cloud_cover_mid", "wind_speed_10m", "wind_speed_100m", "wind_direction_10m", "wind_direction_100m", "direct_radiation"],
 }
 responses = openmeteo.weather_api(url, params = params)
@@ -67,7 +67,3 @@ hourly_data["direct_radiation"] = hourly_direct_radiation
 
 hourly_dataframe = pd.DataFrame(data = hourly_data)
 print("\nHourly data\n", hourly_dataframe)
-
-# preparing data for hnm
-
-# normalizing values

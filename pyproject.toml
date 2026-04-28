@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=71.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "markovstates"
+version = "0.1.0"
+description = "Simple ML model for weather prediction using hidden markov models"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pip",
+    "openmeteo-requests",
+    "requests-cache",
+    "pandas",
+    "retry-requests",
+    "hmmlearn",
+    "scipy",
+    "numpy",
+    "pytest",
+    "matplotlib"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
