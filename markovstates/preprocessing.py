@@ -10,7 +10,7 @@ from markovstates.data_collect import hourly_dataframe
 
 class Preprocess:
 
-    def __init__(self, df):
+    def __init__(self, df: pd.DataFrame) -> None:
         self.df = df
 
     # define instance methods for preprocessing object
@@ -82,5 +82,27 @@ if __name__ == "__main__":
 After factor analysis we find that the below features are most valuable. Imported as FINAL_FEATURES from 
 factor_analysis.py and factor_explore.ipynb
 
-We shall now fit and scale the updated features matrix with these new key components:
+We shall now fit and scale the updated features matrix with these new key components,
+I will do so through a class again with our updated scaled feature matrix
+and relevant operations with it as instance methods:
 '''
+
+class FeatMat(Preprocess):
+
+    def __init__(self, df: pd.DataFrame, feats: list[str]) -> None:
+        super().__init__(df)
+        self.feats = feats
+
+    def construct_feat_mat(self) -> np.ndarray:
+        '''
+        this function retrieves the optimal features from the FA file, then
+        constructs a new df with just those features, then applies the preprocessing
+        techniques for scaling, cleaning, and normalizing our matrix for our models
+        '''
+
+        UPDATED_DF = self.df.loc[:, self.feats]
+        sclr = StandardScaler()
+        sclr.fit(UPDATED_DF)
+        X = sclr.transform(UPDATED_DF).astype(np.float64)
+
+        return X

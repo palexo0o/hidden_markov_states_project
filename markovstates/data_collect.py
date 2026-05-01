@@ -16,7 +16,7 @@ url = "https://archive-api.open-meteo.com/v1/archive"
 params = {
 	"latitude": 40.41,
 	"longitude": -3.7,
-	"start_date": "2026-03-10",
+	"start_date": "2023-04-10",
 	"end_date": "2026-04-10",
 	"hourly": ["temperature_2m", "relative_humidity_2m", "dew_point_2m", "apparent_temperature", "precipitation", "surface_pressure", "cloud_cover", "cloud_cover_mid", "wind_speed_10m", "wind_speed_100m", "wind_direction_10m", "wind_direction_100m", "direct_radiation"],
 }
@@ -24,9 +24,6 @@ responses = openmeteo.weather_api(url, params = params)
 
 # Process first location. Add a for-loop for multiple locations or weather models
 response = responses[0]
-print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
-print(f"Elevation: {response.Elevation()} m asl")
-print(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s")
 
 # Process hourly data. The order of variables needs to be the same as requested.
 hourly = response.Hourly()
@@ -66,4 +63,8 @@ hourly_data["wind_direction_100m"] = hourly_wind_direction_100m
 hourly_data["direct_radiation"] = hourly_direct_radiation
 
 hourly_dataframe = pd.DataFrame(data = hourly_data)
-print("\nHourly data\n", hourly_dataframe)
+if __name__ == "__main__":
+    print("\nHourly data\n", hourly_dataframe)
+    print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
+    print(f"Elevation: {response.Elevation()} m asl")
+    print(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s")
