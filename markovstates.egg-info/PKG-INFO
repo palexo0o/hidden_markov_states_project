@@ -1,0 +1,32 @@
+Metadata-Version: 2.4
+Name: markovstates
+Version: 0.1.0
+Summary: Simple ML model for weather prediction using hidden markov models
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pip
+Requires-Dist: openmeteo-requests
+Requires-Dist: requests-cache
+Requires-Dist: pandas
+Requires-Dist: retry-requests
+Requires-Dist: hmmlearn
+Requires-Dist: scipy
+Requires-Dist: numpy
+Requires-Dist: pytest
+Requires-Dist: matplotlib
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+
+This is a project which uses markov chains, specifically, a hidden markov model, to model weather state transitions, via the HMMlearn library. It will output various useful data points, such as steady state probabilities, and transition probabilities between each state. We hope to have some degree of 
+
+This will be CLI tool, with the terminal being the sources of user input. Arguments are found below:
+
+Valid CLI Arguments/How to Use:
+
+-sd, --startdate : marks the startdate of the weather data you want to use
+
+-ed, --enddate : marks the enddate of the weather data you want to use
+
+-vs, --viewstates : shows the possible weather states, and specifically what weather parameter ranges each state falls under
+
+more will be added soon

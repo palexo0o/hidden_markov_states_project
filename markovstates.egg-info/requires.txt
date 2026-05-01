@@ -1,0 +1,13 @@
+pip
+openmeteo-requests
+requests-cache
+pandas
+retry-requests
+hmmlearn
+scipy
+numpy
+pytest
+matplotlib
+
+[dev]
+pytest
