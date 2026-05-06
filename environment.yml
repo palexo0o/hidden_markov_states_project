@@ -8,6 +8,7 @@ dependencies:
   - pandas
   - hmmlearn
   - matplotlib
+  - seaborn
   - pytest
   - scipy
   - scikit-learn

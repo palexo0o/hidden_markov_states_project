@@ -2,4 +2,4 @@
 
 from markovstates.preprocessing import Preprocess, FeatMat
 from markovstates.data_collect import hourly_dataframe
-from markovstates.factor_analysis import X, FINAL_FEATURES, feature_cols, scaler
+from markovstates.models import WeatherModel, HMMWeatherModel

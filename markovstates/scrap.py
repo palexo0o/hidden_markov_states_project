@@ -10,9 +10,13 @@ class Preprocess:
     def __init__(self, df: pd.DataFrame) -> None:
         self.df = df
 
-    def extract_features(self, df: pd.DataFrame) -> list[str]:
-        """removes str columns and data, only retrieves numeric data"""
-        return df.select_dtypes(include=[np.number]).columns.tolist()
+    def clean_df(self) -> pd.DataFrame:
+        # remove the apparent temperature column to not have duplicate readings
+        return self.df.drop(['apparent_temperature'], axis=1)
+
+    def extract_features(self) -> list[str]:
+        # return only numeric columns (exclude datetime objects)
+        return self.df.select_dtypes(include=[np.number]).columns.tolist()
 
     def resample(self) -> pd.DataFrame:
         """
@@ -71,6 +75,8 @@ class FeatMat(Preprocess):
         Cleans, resamples to daily, subsets to final features,
         scales, and returns the feature matrix ready for hmmlearn.
         '''
+        cleaned = self.clean_df()
+        self.df = cleaned
         daily = self.resample()
         daily = daily[self.feats]
         scaler = self.fit_scaler(daily, self.feats)

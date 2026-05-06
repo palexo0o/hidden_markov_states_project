@@ -17,7 +17,7 @@ params = {
 	"latitude": 40.41,
 	"longitude": -3.7,
 	"start_date": "2023-04-10",
-	"end_date": "2026-04-10",
+	"end_date": "2026-05-03",
 	"hourly": ["temperature_2m", "relative_humidity_2m", "dew_point_2m", "apparent_temperature", "precipitation", "surface_pressure", "cloud_cover", "cloud_cover_mid", "wind_speed_10m", "wind_speed_100m", "wind_direction_10m", "wind_direction_100m", "direct_radiation"],
 }
 responses = openmeteo.weather_api(url, params = params)
@@ -28,17 +28,12 @@ response = responses[0]
 # Process hourly data. The order of variables needs to be the same as requested.
 hourly = response.Hourly()
 hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
-hourly_relative_humidity_2m = hourly.Variables(1).ValuesAsNumpy()
 hourly_dew_point_2m = hourly.Variables(2).ValuesAsNumpy()
-hourly_apparent_temperature = hourly.Variables(3).ValuesAsNumpy()
 hourly_precipitation = hourly.Variables(4).ValuesAsNumpy()
 hourly_surface_pressure = hourly.Variables(5).ValuesAsNumpy()
-hourly_cloud_cover = hourly.Variables(6).ValuesAsNumpy()
 hourly_cloud_cover_mid = hourly.Variables(7).ValuesAsNumpy()
 hourly_wind_speed_10m = hourly.Variables(8).ValuesAsNumpy()
-hourly_wind_speed_100m = hourly.Variables(9).ValuesAsNumpy()
 hourly_wind_direction_10m = hourly.Variables(10).ValuesAsNumpy()
-hourly_wind_direction_100m = hourly.Variables(11).ValuesAsNumpy()
 hourly_direct_radiation = hourly.Variables(12).ValuesAsNumpy()
 
 hourly_data = {"date": pd.date_range(
@@ -49,17 +44,12 @@ hourly_data = {"date": pd.date_range(
 )}
 
 hourly_data["temperature_2m"] = hourly_temperature_2m
-hourly_data["relative_humidity_2m"] = hourly_relative_humidity_2m
 hourly_data["dew_point_2m"] = hourly_dew_point_2m
-hourly_data["apparent_temperature"] = hourly_apparent_temperature
 hourly_data["precipitation"] = hourly_precipitation
 hourly_data["surface_pressure"] = hourly_surface_pressure
-hourly_data["cloud_cover"] = hourly_cloud_cover
 hourly_data["cloud_cover_mid"] = hourly_cloud_cover_mid
 hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
-hourly_data["wind_speed_100m"] = hourly_wind_speed_100m
 hourly_data["wind_direction_10m"] = hourly_wind_direction_10m
-hourly_data["wind_direction_100m"] = hourly_wind_direction_100m
 hourly_data["direct_radiation"] = hourly_direct_radiation
 
 hourly_dataframe = pd.DataFrame(data = hourly_data)
