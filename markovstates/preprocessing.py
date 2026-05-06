@@ -59,6 +59,7 @@ class Preprocess:
     def load_scaler(self, path: str) -> StandardScaler:
         return joblib.load(path)
 
+# it just dawned upon me that the below class is lowkey useless...
 
 class FeatMat(Preprocess):
 

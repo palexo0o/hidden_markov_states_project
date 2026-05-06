@@ -4,6 +4,7 @@ Analyzes weather regimes for Madrid using HMM clustering and transition analysis
 """
 
 import sys
+import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,6 +17,8 @@ from markovstates.data_collect import response
 from markovstates.factor_analysis import FINAL_FEATURES
 from markovstates.models import HMMWeatherModel
 
+# ok full transparency this was all implemented by claude code, as I wanted to make CLI nice, and
+# not just a crappy argparse thing with two little commands
 
 def print_header(title: str) -> None:
     """Print formatted section header."""
@@ -24,47 +27,60 @@ def print_header(title: str) -> None:
     print("="*70)
 
 
-def get_user_input() -> tuple[str, str, bool]:
-    """
-    Get user input for date range and model training preference.
-    
-    Returns:
-        tuple: (start_date, end_date, should_retrain)
-    """
-    print_header("WEATHER REGIME ANALYSIS - Hidden Markov Model Pipeline")
-    print("\nThis tool analyzes historical weather data to identify distinct")
-    print("weather regimes and their transition probabilities.")
-    
-    print("\nLocation: Madrid, Spain (40.41°N, 3.7°E)")
-    print("Data Source: Open-Meteo Historical Archive API")
-    print("Model: Gaussian Hidden Markov Model (5 states)")
-    
-    # Date inputs
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments for the weather analysis pipeline."""
     default_start = "2023-04-10"
     default_end = datetime.now().strftime("%Y-%m-%d")
     
-    while True:
-        start_input = input(f"\nEnter start date (YYYY-MM-DD) [{default_start}]: ").strip()
-        start_date = start_input if start_input else default_start
-        try:
-            datetime.strptime(start_date, "%Y-%m-%d")
-            break
-        except ValueError:
-            print("Invalid date format. Please use YYYY-MM-DD")
+    parser = argparse.ArgumentParser(
+        description="Analyze weather regimes for Madrid using a Hidden Markov Model",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python main.py
+  python main.py --start 2024-01-01 --end 2025-12-31
+  python main.py --retrain
+  python main.py -s 2023-06-01 -e 2024-06-01 --retrain
+        """
+    )
     
-    while True:
-        end_input = input(f"Enter end date (YYYY-MM-DD) [{default_end}]: ").strip()
-        end_date = end_input if end_input else default_end
-        try:
-            datetime.strptime(end_date, "%Y-%m-%d")
-            break
-        except ValueError:
-            print("Invalid date format. Please use YYYY-MM-DD")
+    parser.add_argument(
+        '--start', '-s',
+        type=str,
+        default=default_start,
+        metavar='DATE',
+        help=f"Start date in YYYY-MM-DD format (default: {default_start})"
+    )
     
-    retrain_input = input("\nRetrain model? (y/n) [n]: ").strip().lower()
-    should_retrain = retrain_input == 'y'
+    parser.add_argument(
+        '--end', '-e',
+        type=str,
+        default=default_end,
+        metavar='DATE',
+        help=f"End date in YYYY-MM-DD format (default: {default_end})"
+    )
     
-    return start_date, end_date, should_retrain
+    parser.add_argument(
+        '--retrain',
+        action='store_true',
+        help="Train a new HMM model instead of using the pre-trained one"
+    )
+    
+    args = parser.parse_args()
+    
+    # Validate dates
+    try:
+        datetime.strptime(args.start, "%Y-%m-%d")
+    except ValueError:
+        parser.error(f"Start date '{args.start}' is not in YYYY-MM-DD format")
+    
+    try:
+        datetime.strptime(args.end, "%Y-%m-%d")
+    except ValueError:
+        parser.error(f"End date '{args.end}' is not in YYYY-MM-DD format")
+    
+    return args
+
 
 
 def collect_weather_data() -> pd.DataFrame:
@@ -76,7 +92,10 @@ def collect_weather_data() -> pd.DataFrame:
         pd.DataFrame: Hourly weather data
     """
     print_header("DATA COLLECTION")
-    print("✓ Weather data retrieved from Open-Meteo API")
+    print("Location: Madrid, Spain (40.41°N, 3.7°E)")
+    print("Data Source: Open-Meteo Historical Archive API")
+    print("Model: Gaussian Hidden Markov Model (5 states)")
+    print("\n✓ Weather data retrieved from Open-Meteo API")
     print(f"✓ Total records: {len(hourly_dataframe):,}")
     print(f"✓ Date range: {hourly_dataframe['date'].min()} to {hourly_dataframe['date'].max()}")
     print(f"✓ Columns: {', '.join(hourly_dataframe.columns.tolist())}")
@@ -217,7 +236,7 @@ def compute_statistics(hmm: HMMWeatherModel, daily_df: pd.DataFrame,
     transmat = hmm.transition_mat()
     stats['transition_matrix'] = transmat
     
-    print("\n🔄 Transition Probabilities (from → to):")
+    print("\n Transition Probabilities (from → to):")
     print("\n   " + "".join([f"{regime_names[i]:18s}" for i in range(5)]))
     print("   " + "-"*100)
     for i in range(5):
@@ -230,7 +249,7 @@ def compute_statistics(hmm: HMMWeatherModel, daily_df: pd.DataFrame,
     steady_state = steady_state / steady_state.sum()
     stats['steady_state'] = steady_state
     
-    print("\n📊 Steady-State Probabilities (long-run regime distribution):")
+    print("\n Steady-State Probabilities (long-run regime distribution):")
     for i, regime_name in regime_names.items():
         print(f"   {regime_name:20s}: {steady_state[i]:6.3f} ({steady_state[i]*100:5.1f}%)")
     
@@ -258,7 +277,7 @@ def compute_statistics(hmm: HMMWeatherModel, daily_df: pd.DataFrame,
     
     stats['avg_durations'] = avg_durations
     
-    print("\n⏱️  Average Regime Duration (days):")
+    print("\n Average Regime Duration (days):")
     for regime_id, avg_dur in avg_durations.items():
         print(f"   {regime_names[regime_id]:20s}: {avg_dur:6.2f} days")
     
@@ -271,7 +290,7 @@ def compute_statistics(hmm: HMMWeatherModel, daily_df: pd.DataFrame,
         }
     stats['regime_characteristics'] = regime_chars
     
-    print("\n🌡️  Regime Characteristics (mean feature values):")
+    print("\n Regime Characteristics (mean feature values):")
     print(f"   {'Regime':20s} {'Temp (°C)':>12s} {'Pressure (hPa)':>15s} {'Dew Point (°C)':>15s}")
     print("   " + "-"*65)
     for regime_id in range(5):
@@ -286,12 +305,6 @@ def visualize_results(hmm: HMMWeatherModel, daily_df: pd.DataFrame,
                      regime_names: dict, stats: dict) -> None:
     """
     Generate and display visualizations.
-    
-    Args:
-        hmm: Trained HMM model
-        daily_df: Daily data with regime predictions
-        regime_names: Mapping of regime IDs to names
-        stats: Statistics dictionary
     """
     print_header("GENERATING VISUALIZATIONS")
     
@@ -391,21 +404,16 @@ def visualize_results(hmm: HMMWeatherModel, daily_df: pd.DataFrame,
     plt.tight_layout()
     plt.show()
     
-    print("\n📊 Visualization window opened. Close to continue.")
+    print("\n Visualization window opened. Close to continue.")
 
 
 def generate_summary_report(daily_df: pd.DataFrame, regime_names: dict, stats: dict) -> None:
     """
-    Generate a text summary report of the analysis.
-    
-    Args:
-        daily_df: Daily data with regime predictions
-        regime_names: Mapping of regime IDs to names
-        stats: Statistics dictionary
+    Generate a text summary report of the analysis
     """
     print_header("ANALYSIS SUMMARY")
     
-    print("\n✨ KEY FINDINGS:\n")
+    print("\n KEY FINDINGS:\n")
     
     # Most frequent regime
     most_freq = daily_df["regime_name"].value_counts().index[0]
@@ -451,44 +459,35 @@ def generate_summary_report(daily_df: pd.DataFrame, regime_names: dict, stats: d
 
 def main():
     """Main pipeline execution."""
+    args = parse_arguments()
+    
+    print_header("WEATHER REGIME ANALYSIS - Hidden Markov Model Pipeline")
+    print("\nThis tool analyzes historical weather data to identify distinct")
+    print("weather regimes and their transition probabilities.")
+    
     try:
-        # 1. Get user input
-        start_date, end_date, should_retrain = get_user_input()
-        
-        # 2. Collect weather data
         df = collect_weather_data()
-        
-        # 3. Preprocess data
         X, daily_df = preprocess_data(df)
-        
-        # 4. Train or load model
-        hmm = train_or_load_model(X, should_retrain)
-        
-        # 5. Predict regimes
+        hmm = train_or_load_model(X, args.retrain)
         daily_df, regime_names = predict_regimes(hmm, X, daily_df)
         
-        # 6. Compute statistics
         stats = compute_statistics(hmm, daily_df, regime_names)
-        
-        # 7. Generate visualizations
         visualize_results(hmm, daily_df, regime_names, stats)
-        
-        # 8. Generate summary report
         generate_summary_report(daily_df, regime_names, stats)
         
         print_header("PIPELINE COMPLETE")
-        print("\n✅ Analysis completed successfully!")
-        print("\nNext steps:")
+        print("\n Analysis completed successfully!")
+        print("\n Next steps:")
         print("  • Review the visualizations above")
         print("  • Check regime statistics and transition probabilities")
         print("  • Explore notebooks/ for additional analysis")
         print("\n")
         
     except KeyboardInterrupt:
-        print("\n\n⚠️  Pipeline interrupted by user.")
+        print("\n\n Pipeline interrupted by user.")
         sys.exit(1)
     except Exception as e:
-        print(f"\n\n❌ Error during pipeline execution: {str(e)}")
+        print(f"\n\n Error during pipeline execution: {str(e)}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
