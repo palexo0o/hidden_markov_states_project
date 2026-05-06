@@ -2,3 +2,5 @@ markovstates.cache.sqlite
 .vscode
 markovstates.__pycache__
 .pytest_cache
+.cache.sqllite
+.DS_Store
