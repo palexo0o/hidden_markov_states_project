@@ -1,2 +1,4 @@
-.cache.sqlite
+markovstates.cache.sqlite
 .vscode
+markovstates.__pycache__
+.pytest_cache

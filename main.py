@@ -35,9 +35,9 @@ def get_user_input() -> tuple[str, str, bool]:
     print("\nThis tool analyzes historical weather data to identify distinct")
     print("weather regimes and their transition probabilities.")
     
-    print("\n📍 Location: Madrid, Spain (40.41°N, 3.7°E)")
-    print("📊 Data Source: Open-Meteo Historical Archive API")
-    print("📈 Model: Gaussian Hidden Markov Model (5 states)")
+    print("\nLocation: Madrid, Spain (40.41°N, 3.7°E)")
+    print("Data Source: Open-Meteo Historical Archive API")
+    print("Model: Gaussian Hidden Markov Model (5 states)")
     
     # Date inputs
     default_start = "2023-04-10"
@@ -50,7 +50,7 @@ def get_user_input() -> tuple[str, str, bool]:
             datetime.strptime(start_date, "%Y-%m-%d")
             break
         except ValueError:
-            print("❌ Invalid date format. Please use YYYY-MM-DD")
+            print("Invalid date format. Please use YYYY-MM-DD")
     
     while True:
         end_input = input(f"Enter end date (YYYY-MM-DD) [{default_end}]: ").strip()
@@ -59,7 +59,7 @@ def get_user_input() -> tuple[str, str, bool]:
             datetime.strptime(end_date, "%Y-%m-%d")
             break
         except ValueError:
-            print("❌ Invalid date format. Please use YYYY-MM-DD")
+            print("Invalid date format. Please use YYYY-MM-DD")
     
     retrain_input = input("\nRetrain model? (y/n) [n]: ").strip().lower()
     should_retrain = retrain_input == 'y'
@@ -101,22 +101,22 @@ def preprocess_data(df: pd.DataFrame) -> tuple[np.ndarray, pd.DataFrame]:
     # Initialize preprocessor
     pp = Preprocess(df)
     
-    print("📍 Step 1: Resampling to daily data")
+    print(" Step 1: Resampling to daily data")
     daily_df = pp.resample()
-    print(f"   ✓ Resampled from {len(df):,} hourly records to {len(daily_df):,} daily records")
+    print(f"Resampled from {len(df):,} hourly records to {len(daily_df):,} daily records")
     
-    print("\n📍 Step 2: Handling missing values")
+    print("\n step 2: Handling missing values")
     daily_df_clean = pp.handle_missing(method="interpolate")
-    print(f"   ✓ Applied linear interpolation for missing values")
+    print(f"Applied linear interpolation for missing values")
     
-    print("\n📍 Step 3: Constructing feature matrix")
-    print(f"   ✓ Selected features: {FINAL_FEATURES}")
+    print("\n Step 3: Constructing feature matrix")
+    print(f"Selected features: {FINAL_FEATURES}")
     
     # Create and construct feature matrix
     fm = FeatMat(df, FINAL_FEATURES)
     X = fm.construct_feat_mat()
-    print(f"   ✓ Feature matrix shape: {X.shape}")
-    print(f"   ✓ Features scaled using StandardScaler (mean=0, std=1)")
+    print(f"feature matrix shape: {X.shape}")
+    print(f"features scaled using StandardScaler (mean=0, std=1)")
     
     # Get daily data with selected features for output
     daily_df_final = daily_df[FINAL_FEATURES]
@@ -127,29 +127,22 @@ def preprocess_data(df: pd.DataFrame) -> tuple[np.ndarray, pd.DataFrame]:
 def train_or_load_model(X: np.ndarray, should_retrain: bool) -> HMMWeatherModel:
     """
     Train a new HMM model or load an existing one.
-    
-    Args:
-        X: Feature matrix
-        should_retrain: Whether to train a new model
-        
-    Returns:
-        HMMWeatherModel: Fitted model
     """
     print_header("MODEL TRAINING/LOADING")
     
     model_path = "/Users/philipalexopoulos/markovstates/models/hmm_final.pkl"
     
     if should_retrain:
-        print("🔧 Training new HMM model...")
-        print("   Parameters: n_components=5, covariance_type='diag', n_restarts=50")
-        print("   (Testing 50 different random seeds and selecting best model)")
+        print("Training new HMM model...")
+        print("Parameters: n_components=5, covariance_type='diag', n_restarts=50")
+        print("(Testing 50 different random seeds and selecting best model)")
         
         hmm = HMMWeatherModel(n_components=5, covar_type='diag', n_restarts=50)
         hmm.fit(X)
         
         score = hmm.score(X)
         bic = hmm.bic(X)
-        print(f"\n✓ Model trained successfully!")
+        print(f"\n Model trained successfully!")
         print(f"   Log-Likelihood Score: {score:.4f}")
         print(f"   BIC: {bic:.4f}")
         
@@ -158,7 +151,7 @@ def train_or_load_model(X: np.ndarray, should_retrain: bool) -> HMMWeatherModel:
         print(f"   Model saved to: {model_path}")
         
     else:
-        print("📂 Loading pre-trained model...")
+        print("Loading pre-trained model...")
         hmm = HMMWeatherModel(n_components=5, covar_type='diag')
         hmm.load(model_path)
         print(f"✓ Model loaded from: {model_path}")
@@ -174,15 +167,7 @@ def train_or_load_model(X: np.ndarray, should_retrain: bool) -> HMMWeatherModel:
 def predict_regimes(hmm: HMMWeatherModel, X: np.ndarray, 
                    daily_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Predict weather regimes for each time step.
-    
-    Args:
-        hmm: Trained HMM model
-        X: Feature matrix
-        daily_df: Daily dataframe for indexing
-        
-    Returns:
-        pd.DataFrame: Daily data with regime predictions
+    predict weather regimes for each time step.
     """
     print_header("REGIME PREDICTION")
     
@@ -201,8 +186,8 @@ def predict_regimes(hmm: HMMWeatherModel, X: np.ndarray,
     daily_df["regime_id"] = regimes
     daily_df["regime_name"] = daily_df["regime_id"].map(regime_names)
     
-    print(f"✓ Predicted regimes for {len(daily_df)} days")
-    print(f"\nRegime Distribution:")
+    print(f"Predicted regimes for {len(daily_df)} days")
+    print(f"\n Regime Distribution:")
     regime_counts = daily_df["regime_name"].value_counts().sort_index()
     for regime_name, count in regime_counts.items():
         percentage = (count / len(daily_df)) * 100

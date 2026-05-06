@@ -14,7 +14,7 @@ class Preprocess:
         """removes str columns and data, only retrieves numeric data"""
         return df.select_dtypes(include=[np.number]).columns.tolist()
 
-    def resample(self) -> pd.DataFrame:
+    def resample(self) -> pd.DataFrame: # 
         """
         Resamples the dataframe by days so repeated hourly correlations over 24h cycles
         don't screw up the model training, also removes hourly noise since 

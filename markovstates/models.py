@@ -4,10 +4,14 @@ import joblib
 import os
 from hmmlearn.hmm import GaussianHMM
 from abc import ABC, abstractmethod
+from markovstates.utils import FeatMat, FINAL_FEATURES, Preprocess, hourly_dataframe
 
 # did this with minimal help from claude, not even claude code. 
 # All code here is typed by me, same goes for the rest of the files. 
 # Just asked claude for advice/guidance in model training, OOP implementation
+
+FM = FeatMat(hourly_dataframe, FINAL_FEATURES)
+X = FM.construct_feat_mat()
 
 class WeatherModel(ABC):
 
@@ -79,10 +83,7 @@ class HMMWeatherModel(WeatherModel):
     
     def score_table(self, X: np.ndarray, n_range: tuple = (2,7)) -> pd.DataFrame:
         """
-        return dataframe of AIC, BIC, and Seed scores for each respective model
-        AIC = -2 × log-likelihood + 2 × n_parameters
-        BIC = -2 × log-likelihood + n_parameters × log(n_samples)
-        LL = Σ(n, i=1) ln(P(x_i | Θ))    , where each x_i is a state given our model parameters theta
+        return dataFrame of AIC, BIC, and Seed scores for each respective model
         """
         results = pd.DataFrame(columns=["n_components", "log_likelihood", "AIC", "BIC"])
 
